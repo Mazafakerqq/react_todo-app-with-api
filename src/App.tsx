@@ -15,7 +15,7 @@ export const App: React.FC = () => {
   const [todoTitle, setTodoTitle] = useState<string>('');
   const [filter, setFilter] = useState(Filter.All);
   const [loadingAllTodos, setLoadingAllTodos] = useState<boolean>(false);
-  const [loadingTodoId, setLoadingTodoId] = useState<number[] | null>(null);
+  const [loadingTodoIds, setLoadingTodoIds] = useState<number[] | null>(null);
   const [editingTitle, setEditingTitle] = useState<string>('');
   const [editingTodoId, setEditingTodoId] = useState<number | null>(null);
 
@@ -44,7 +44,7 @@ export const App: React.FC = () => {
   }, [todos, filter]);
 
   function deleteTodo(todoId: number) {
-    setLoadingTodoId(prevIds => {
+    setLoadingTodoIds(prevIds => {
       return prevIds ? [...prevIds, todoId] : [todoId];
     });
     setErrorMessage('');
@@ -65,13 +65,13 @@ export const App: React.FC = () => {
         throw error;
       })
       .finally(() => {
-        setLoadingTodoId(null);
+        setLoadingTodoIds(null);
       });
   }
 
   function updateTodo(updatedTodo: Todo) {
     setErrorMessage('');
-    setLoadingTodoId([updatedTodo.id]);
+    setLoadingTodoIds([updatedTodo.id]);
 
     return dataTodos
       .updateTodos(updatedTodo)
@@ -90,7 +90,7 @@ export const App: React.FC = () => {
         throw error;
       })
       .finally(() => {
-        setLoadingTodoId(null);
+        setLoadingTodoIds(null);
         setLoadingAllTodos(false);
       });
   }
@@ -122,16 +122,16 @@ export const App: React.FC = () => {
           todos={todos}
           setTodos={setTodos}
           setErrorMessage={setErrorMessage}
-          loadingTodoId={loadingTodoId}
-          setLoadingTodoId={setLoadingTodoId}
+          loadingTodoIds={loadingTodoIds}
+          setLoadingTodoIds={setLoadingTodoIds}
           updateTodo={updateTodo}
           inputRef={inputRef}
           todoTitle={todoTitle}
           setTodoTitle={setTodoTitle}
         />
         <TodoList
-          loadingTodoId={loadingTodoId}
-          setLoadingTodoId={setLoadingTodoId}
+          loadingTodoIds={loadingTodoIds}
+          setLoadingTodoIds={setLoadingTodoIds}
           loadingAllTodos={loadingAllTodos}
           setErrorMessage={setErrorMessage}
           setTodos={setTodos}
@@ -148,7 +148,7 @@ export const App: React.FC = () => {
 
         {todos.length > 0 && (
           <Footer
-            setLoadingTodoId={setLoadingTodoId}
+            setLoadingTodoIds={setLoadingTodoIds}
             deleteTodo={deleteTodo}
             setErrorMessage={setErrorMessage}
             todos={todos}

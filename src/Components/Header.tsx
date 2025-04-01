@@ -1,25 +1,25 @@
-import React, { Dispatch, RefObject, SetStateAction } from 'react';
+import React, { RefObject } from 'react';
 import { Todo, TodoInput } from '../types/Todo';
 import { dataTodos, USER_ID } from '../api/todos';
 
 interface HeaderProps {
   todos: Todo[];
-  setTodos: Dispatch<SetStateAction<Todo[]>>;
-  setErrorMessage: Dispatch<React.SetStateAction<string>>;
-  loadingTodoId: number[] | null;
-  setLoadingTodoId: Dispatch<React.SetStateAction<number[] | null>>;
+  setTodos: (value: Todo[]) => void;
+  setErrorMessage: (value: string) => void;
+  loadingTodoIds: number[] | null;
+  setLoadingTodoIds: (value: number[] | null) => void;
   updateTodo: (updatedTodo: Todo) => Promise<void>;
   inputRef: RefObject<HTMLInputElement>;
   todoTitle: string;
-  setTodoTitle: Dispatch<React.SetStateAction<string>>;
+  setTodoTitle: (value: string) => void;
 }
 
 export const Header: React.FC<HeaderProps> = ({
   todos,
   setTodos,
   setErrorMessage,
-  loadingTodoId,
-  setLoadingTodoId,
+  loadingTodoIds,
+  setLoadingTodoIds,
   updateTodo,
   inputRef,
   todoTitle,
@@ -27,7 +27,7 @@ export const Header: React.FC<HeaderProps> = ({
 }) => {
   function addTodo({ title, completed, userId }: TodoInput): Promise<Todo> {
     setErrorMessage('');
-    setLoadingTodoId([-1]);
+    setLoadingTodoIds([-1]);
 
     const newTodoOverlay = {
       id: -1,
@@ -36,7 +36,7 @@ export const Header: React.FC<HeaderProps> = ({
       completed,
     };
 
-    setTodos(currentTodos => [...currentTodos, newTodoOverlay]);
+    setTodos([...todos, newTodoOverlay]);
 
     return dataTodos
       .createTodos({ title, completed, userId })
@@ -53,7 +53,7 @@ export const Header: React.FC<HeaderProps> = ({
         return newTodo;
       })
       .catch(error => {
-        setTodos(currentTodos => currentTodos.filter(todo => todo.id !== -1));
+        setTodos(todos.filter(todo => todo.id !== -1));
         setErrorMessage('Unable to add a todo');
 
         setTimeout(() => {
@@ -65,7 +65,7 @@ export const Header: React.FC<HeaderProps> = ({
         throw error;
       })
       .finally(() => {
-        setLoadingTodoId(null);
+        setLoadingTodoIds(null);
       });
   }
 
@@ -129,7 +129,7 @@ export const Header: React.FC<HeaderProps> = ({
           placeholder="What needs to be done?"
           value={todoTitle}
           onChange={event => setTodoTitle(event.target.value)}
-          disabled={loadingTodoId !== null}
+          disabled={loadingTodoIds !== null}
           autoFocus
         />
       </form>

@@ -1,8 +1,8 @@
-import React, { Dispatch } from 'react';
+import React from 'react';
 
 interface ErrorMessageProps {
   errorMessage: string;
-  setErrorMessage: Dispatch<React.SetStateAction<string>>;
+  setErrorMessage: (value: string) => void;
 }
 
 export const ErrorMessage: React.FC<ErrorMessageProps> = ({

@@ -1,19 +1,19 @@
-import React, { Dispatch, RefObject } from 'react';
+import React, { RefObject } from 'react';
 import { Filter, Todo } from '../types/Todo';
 
 interface FooterProps {
-  setLoadingTodoId: Dispatch<React.SetStateAction<number[] | null>>;
+  setLoadingTodoIds: (value: number[] | null) => void;
   deleteTodo: (todoId: number) => Promise<void>;
-  setErrorMessage: Dispatch<React.SetStateAction<string>>;
+  setErrorMessage: (value: string) => void;
   todos: Todo[];
-  setTodos: Dispatch<React.SetStateAction<Todo[]>>;
+  setTodos: (value: Todo[]) => void;
   inputRef: RefObject<HTMLInputElement>;
   filter: Filter;
-  setFilter: Dispatch<React.SetStateAction<Filter>>;
+  setFilter: (value: Filter) => void;
 }
 
 export const Footer: React.FC<FooterProps> = ({
-  setLoadingTodoId,
+  setLoadingTodoIds,
   deleteTodo,
   setErrorMessage,
   todos,
@@ -25,7 +25,7 @@ export const Footer: React.FC<FooterProps> = ({
   function handleDeleteAllCompletedTodos(completedTodos: Todo[]) {
     const completedIds = completedTodos.map(todo => todo.id);
 
-    setLoadingTodoId(completedIds);
+    setLoadingTodoIds(completedIds);
 
     const deletePromises = completedTodos.map(todo =>
       deleteTodo(todo.id)
@@ -47,9 +47,7 @@ export const Footer: React.FC<FooterProps> = ({
           .filter(result => result.status === 'rejected')
           .map((_, index) => completedIds[index]);
 
-        setTodos(prevTodos =>
-          prevTodos.filter(todo => !successfulIds.includes(todo.id)),
-        );
+        setTodos(todos.filter(todo => !successfulIds.includes(todo.id)));
 
         if (failedIds.length > 0) {
           setErrorMessage('Unable to delete some todos');
@@ -59,7 +57,7 @@ export const Footer: React.FC<FooterProps> = ({
         setErrorMessage('Unable to delete a todo');
       })
       .finally(() => {
-        setLoadingTodoId(null);
+        setLoadingTodoIds(null);
         setTimeout(() => {
           if (inputRef.current) {
             inputRef.current.focus();
