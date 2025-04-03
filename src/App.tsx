@@ -1,79 +1,80 @@
 /* eslint-disable jsx-a11y/label-has-associated-control */
 /* eslint-disable jsx-a11y/control-has-associated-label */
-import React, { useEffect, useMemo, useRef, useState } from 'react';
+import React, {
+  useCallback,
+  useEffect,
+  useMemo,
+  useRef,
+  useState,
+} from 'react';
 import { UserWarning } from './UserWarning';
-import { dataTodos, USER_ID } from './api/todos';
-import { Filter, Todo } from './types/Todo';
+import { callbacks, USER_ID } from './api/todos';
+import { Filter, Todo, ErrorMessageToShow } from './types/Todo';
 import { Header } from './Components/Header';
 import { TodoList } from './Components/TodoList';
 import { Footer } from './Components/Footer';
 import { ErrorMessage } from './Components/ErrorMessage';
+import { useTodos } from './hooks/useTodos';
 
 export const App: React.FC = () => {
   const [todos, setTodos] = useState<Todo[]>([]);
   const [errorMessage, setErrorMessage] = useState<string>('');
   const [todoTitle, setTodoTitle] = useState<string>('');
   const [filter, setFilter] = useState(Filter.All);
-  const [loadingAllTodos, setLoadingAllTodos] = useState<boolean>(false);
+  const [isLoadingAllTodos, setIsLoadingAllTodos] = useState<boolean>(false);
   const [loadingTodoIds, setLoadingTodoIds] = useState<number[] | null>(null);
   const [editingTitle, setEditingTitle] = useState<string>('');
   const [editingTodoId, setEditingTodoId] = useState<number | null>(null);
 
   const inputRef = useRef<HTMLInputElement>(null);
 
-  useEffect(() => {
-    dataTodos
-      .getTodos()
-      .then(setTodos)
-      .catch(() => {
-        setErrorMessage('Unable to load todos');
-      });
-  }, []);
+  useTodos({ setTodos, setErrorMessage });
 
   const filteredTodos = useMemo(() => {
     switch (filter) {
-      case Filter.All:
-        return todos;
       case Filter.Active:
         return todos.filter(todo => !todo.completed);
       case Filter.Completed:
         return todos.filter(todo => todo.completed);
+      case Filter.All:
       default:
         return todos;
     }
   }, [todos, filter]);
 
-  function deleteTodo(todoId: number) {
-    setLoadingTodoIds(prevIds => {
-      return prevIds ? [...prevIds, todoId] : [todoId];
-    });
-    setErrorMessage('');
-
-    return dataTodos
-      .deleteTodos(todoId)
-      .then(() => {
-        setTodos(todos.filter(todo => todo.id !== todoId));
-
-        setTimeout(() => {
-          if (inputRef.current) {
-            inputRef.current.focus();
-          }
-        }, 0);
-      })
-      .catch(error => {
-        setErrorMessage('Unable to delete a todo');
-        throw error;
-      })
-      .finally(() => {
-        setLoadingTodoIds(null);
+  const deleteTodo = useCallback(
+    (todoId: number) => {
+      setLoadingTodoIds(prevIds => {
+        return prevIds ? [...prevIds, todoId] : [todoId];
       });
-  }
+      setErrorMessage('');
 
-  function updateTodo(updatedTodo: Todo) {
+      return callbacks
+        .deleteTodos(todoId)
+        .then(() => {
+          setTodos(todos.filter(todo => todo.id !== todoId));
+
+          setTimeout(() => {
+            if (inputRef.current) {
+              inputRef.current.focus();
+            }
+          }, 0);
+        })
+        .catch(() => {
+          setErrorMessage(ErrorMessageToShow.Delete);
+        })
+        .finally(() => {
+          setLoadingTodoIds(null);
+        });
+    },
+    [todos],
+  );
+
+  const updateTodo = useCallback((updatedTodo: Todo) => {
     setErrorMessage('');
     setLoadingTodoIds([updatedTodo.id]);
 
-    return dataTodos
+    return callbacks
       .updateTodos(updatedTodo)
       .then(todo => {
         setTodos(currentTodos => {
@@ -85,15 +86,14 @@ export const App: React.FC = () => {
           return newTodos;
         });
       })
-      .catch(error => {
-        setErrorMessage('Unable to update a todo');
-        throw error;
+      .catch(() => {
+        setErrorMessage(ErrorMessageToShow.Update);
       })
       .finally(() => {
         setLoadingTodoIds(null);
-        setLoadingAllTodos(false);
+        setIsLoadingAllTodos(false);
       });
-  }
+  }, []);
 
   useEffect(() => {
     if (errorMessage) {
@@ -132,7 +132,7 @@ export const App: React.FC = () => {
         <TodoList
           loadingTodoIds={loadingTodoIds}
           setLoadingTodoIds={setLoadingTodoIds}
-          loadingAllTodos={loadingAllTodos}
+          loadingAllTodos={isLoadingAllTodos}
           setErrorMessage={setErrorMessage}
           setTodos={setTodos}
           todos={todos}

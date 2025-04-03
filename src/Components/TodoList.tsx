@@ -20,39 +20,43 @@ interface TodolistProps {
   deleteTodo: (todoId: number) => Promise<void>;
 }
 
-export const TodoList: React.FC<TodolistProps> = ({
-  loadingTodoIds,
-  loadingAllTodos,
-  setErrorMessage,
-  todos,
-  updateTodo,
-  editingTitle,
-  setEditingTitle,
-  editingTodoId,
-  setEditingTodoId,
-  filteredTodos,
-  deleteTodo,
-  setLoadingTodoIds,
-}) => {
-  return (
-    <section className="todoapp__main" data-cy="TodoList">
-      {filteredTodos.map(todo => (
-        <TodoItem
-          key={todo.id}
-          todo={todo}
-          loadingTodoIds={loadingTodoIds}
-          setLoadingTodoIds={setLoadingTodoIds}
-          loadingAllTodos={loadingAllTodos}
-          setErrorMessage={setErrorMessage}
-          todos={todos}
-          updateTodo={updateTodo}
-          editingTitle={editingTitle}
-          setEditingTitle={setEditingTitle}
-          editingTodoId={editingTodoId}
-          setEditingTodoId={setEditingTodoId}
-          deleteTodo={deleteTodo}
-        />
-      ))}
-    </section>
-  );
-};
+export const TodoList: React.FC<TodolistProps> = React.memo(
+  ({
+    loadingTodoIds,
+    loadingAllTodos,
+    setErrorMessage,
+    todos,
+    updateTodo,
+    editingTitle,
+    setEditingTitle,
+    editingTodoId,
+    setEditingTodoId,
+    filteredTodos,
+    deleteTodo,
+    setLoadingTodoIds,
+  }) => {
+    return (
+      <section className="todoapp__main" data-cy="TodoList">
+        {filteredTodos.map(todo => (
+          <TodoItem
+            key={todo.id}
+            todo={todo}
+            loadingTodoIds={loadingTodoIds}
+            setLoadingTodoIds={setLoadingTodoIds}
+            loadingAllTodos={loadingAllTodos}
+            setErrorMessage={setErrorMessage}
+            todos={todos}
+            updateTodo={updateTodo}
+            editingTitle={editingTitle}
+            setEditingTitle={setEditingTitle}
+            editingTodoId={editingTodoId}
+            setEditingTodoId={setEditingTodoId}
+            deleteTodo={deleteTodo}
+          />
+        ))}
+      </section>
+    );
+  },
+);
+
+TodoList.displayName = 'TodoList';
